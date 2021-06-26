@@ -27,7 +27,11 @@ source-repository    head
 executable loadable-singletons
     main-is:          Main.hs
     build-depends:    base >= 4.11.0.0 && < 5,
-                      mtl  ^>= 2.2,
-                      dep-t ^>= 0.4.4
+                      direct-sqlite,
+                      text,
+                      bytestring,
+                      directory,
+                      filepath,
+                      optparse-applicative
     default-language: Haskell2010
 
