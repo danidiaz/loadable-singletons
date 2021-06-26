@@ -12,6 +12,14 @@ type is loaded using the facilities provided by the library.
 
 Perhaps I'm overcomplicating things though.
 
+## remember to add the resources to extra-source-files
+
+Like this:
+
+    extra-source-files:  lib/**/*.txt
+
+Requires `cabal-version: 3` or greater.
+
 ## making direct-sqlite work on windows
 
 [download page](https://www.sqlite.org/download.html).
