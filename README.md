@@ -1,4 +1,4 @@
-# loadable-singletions
+# loadable-singletons
 
 (under construction)
 
