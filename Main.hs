@@ -11,11 +11,13 @@ import Data.Tree
 import Data.List
 import Data.Monoid
 import Data.Coerce
+import Data.Foldable
 
 main :: IO ()
 main = do
   Pack {packageFolder,exePath} <- O.execParser parserInfo
   roots <- filter isRoot <$> listDirectory packageFolder
+  traverse_ putStrLn roots
   pure ()
 
 data Command = Pack {packageFolder :: FilePath, exePath :: FilePath} deriving (Show)
@@ -48,4 +50,12 @@ rootPrefixes = ["src", "lib", "app"]
 
 isRoot :: FilePath -> Bool
 isRoot path = getAny $ foldMap (coerce (isPrefixOf @Char)) rootPrefixes $ path
+
+type ModuleFolder = String
+
+resourceForest :: [FilePath] -> IO (Forest ModuleFolder) 
+resourceForest = foldMap rootResoureForest
+  where
+    rootResoureForest :: FilePath -> IO (Forest ModuleFolder)
+    rootResoureForest path = undefined
 
