@@ -1,12 +1,24 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Main where
 
 import Options.Applicative qualified as O
 import System.Directory
 import System.FilePath
+import Data.Tree
+import Data.List
+import Data.Monoid
+import Data.Coerce
 
-data Command = Pack {baseFolder :: FilePath, exePath :: FilePath} deriving (Show)
+main :: IO ()
+main = do
+  Pack {packageFolder,exePath} <- O.execParser parserInfo
+  roots <- filter isRoot <$> listDirectory packageFolder
+  pure ()
+
+data Command = Pack {packageFolder :: FilePath, exePath :: FilePath} deriving (Show)
 
 parserInfo :: O.ParserInfo Command
 parserInfo =
@@ -31,7 +43,9 @@ parserInfo =
       makeParserInfo p mods = O.info (O.helper <*> p) (O.fullDesc <> mods)
    in toplevel
 
-main :: IO ()
-main = do
-  _ <- O.execParser parserInfo
-  pure ()
+rootPrefixes :: [String]
+rootPrefixes = ["src", "lib", "app"]
+
+isRoot :: FilePath -> Bool
+isRoot path = getAny $ foldMap (coerce (isPrefixOf @Char)) rootPrefixes $ path
+
