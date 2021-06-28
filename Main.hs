@@ -60,7 +60,29 @@ isRoot path = do
 rootPrefixes :: [String]
 rootPrefixes = ["src", "lib", "app"]
 
-type ModuleFolder = String
+type Section = String
+
+data Catalog = Catalog {
+        txt :: [(Section, FilePath)]
+    ,   sql :: [(Section, FilePath)]
+    ,   json :: [(Section, FilePath)]
+    } deriving Show
+
+instance Semigroup Catalog where
+    Catalog a b c <> Catalog a' b' c' = Catalog (a <> a') (b <> b') (c <> c')
+
+instance Monoid Catalog where
+    mempty = Catalog [] [] []
+
+parseCatalog :: FilePath -> Catalog
+parseCatalog fullPath =
+    let (dir,filename) = splitFileName fullPath 
+        (bare,ext) = splitExtension filename
+        r = [(bare,fullPath)]
+     in case ext of
+        ".txt" -> mempty {txt = r} 
+        ".sql" -> mempty {sql = r}
+        ".json" -> mempty {json = r}
 
 resourceForest :: FilePath -> IO (Forest FilePath) 
 resourceForest path = do
