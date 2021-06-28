@@ -10,13 +10,16 @@ import System.FilePath
 import Data.Tree
 import Data.List
 import Data.Monoid
+import Control.Monad
 import Data.Coerce
 import Data.Foldable
 
 main :: IO ()
 main = do
   Pack {packageFolder,exePath} <- O.execParser parserInfo
-  roots <- filter isRoot <$> listDirectory packageFolder
+  roots <- do 
+    candidates <- listDirectory packageFolder
+    filterM isRoot $ map (packageFolder </>) candidates
   traverse_ putStrLn roots
   pure ()
 
@@ -45,11 +48,14 @@ parserInfo =
       makeParserInfo p mods = O.info (O.helper <*> p) (O.fullDesc <> mods)
    in toplevel
 
+isRoot :: FilePath -> IO Bool
+isRoot path = do
+    isFolder <- doesDirectoryExist path
+    let Any prefixed = foldMap (coerce (isPrefixOf @Char)) rootPrefixes (takeFileName path)
+    pure $ isFolder && prefixed
+
 rootPrefixes :: [String]
 rootPrefixes = ["src", "lib", "app"]
-
-isRoot :: FilePath -> Bool
-isRoot path = getAny $ foldMap (coerce (isPrefixOf @Char)) rootPrefixes $ path
 
 type ModuleFolder = String
 
