@@ -64,9 +64,12 @@ type ModuleFolder = String
 
 resourceForest :: FilePath -> IO (Forest FilePath) 
 resourceForest path = do
-        directories <- do 
+        (directories, files) <- do 
             candidates <- listDirectory path
-            filterM doesDirectoryExist $ (path </>) <$> candidates
+            let candidatesFullPath = (path </>) <$> candidates
+            directories <- filterM doesDirectoryExist candidatesFullPath 
+            files <- filterM doesFileExist candidatesFullPath 
+            pure (directories, files)
         let buildNode d = do
                 under <- resourceForest d
                 pure $ Node d under
