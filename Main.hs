@@ -13,6 +13,7 @@ import Data.Monoid
 import Control.Monad
 import Data.Coerce
 import Data.Foldable
+import Data.Functor.Compose
 
 main :: IO ()
 main = do
@@ -21,6 +22,8 @@ main = do
     candidates <- listDirectory packageFolder
     filterM isRoot $ map (packageFolder </>) candidates
   traverse_ putStrLn roots
+  resources <- foldMap resourceForest roots
+  putStrLn $ drawForest resources
   pure ()
 
 data Command = Pack {packageFolder :: FilePath, exePath :: FilePath} deriving (Show)
@@ -59,9 +62,13 @@ rootPrefixes = ["src", "lib", "app"]
 
 type ModuleFolder = String
 
-resourceForest :: [FilePath] -> IO (Forest ModuleFolder) 
-resourceForest = foldMap rootResoureForest
-  where
-    rootResoureForest :: FilePath -> IO (Forest ModuleFolder)
-    rootResoureForest path = undefined
+resourceForest :: FilePath -> IO (Forest FilePath) 
+resourceForest path = do
+        directories <- do 
+            candidates <- listDirectory path
+            filterM doesDirectoryExist $ (path </>) <$> candidates
+        let buildNode d = do
+                under <- resourceForest d
+                pure $ Node d under
+        traverse buildNode directories 
 
