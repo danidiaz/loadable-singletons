@@ -22,8 +22,8 @@ main = do
     candidates <- listDirectory packageFolder
     filterM isRoot $ map (packageFolder </>) candidates
   traverse_ putStrLn roots
-  resources <- foldMap resourceForest roots
-  putStrLn $ drawForest resources
+  resources <- foldMap resourceForest0 roots
+  putStrLn $ drawForest (fmap (fmap show) resources)
   pure ()
 
 data Command = Pack {packageFolder :: FilePath, exePath :: FilePath} deriving (Show)
@@ -83,18 +83,27 @@ parseCatalog fullPath =
         ".txt" -> mempty {txt = r} 
         ".sql" -> mempty {sql = r}
         ".json" -> mempty {json = r}
-        "" -> mempty
+        _ -> mempty
 
-resourceForest :: FilePath -> IO (Forest FilePath) 
-resourceForest path = do
-        (directories, files) <- do 
-            candidates <- listDirectory path
-            let candidatesFullPath = (path </>) <$> candidates
-            directories <- filterM doesDirectoryExist candidatesFullPath 
-            files <- filterM doesFileExist candidatesFullPath 
-            pure (directories, files)
-        let buildNode d = do
-                under <- resourceForest d
-                pure $ Node d under
-        traverse buildNode directories 
+resourceForest0 :: FilePath -> IO (Forest (FilePath,Catalog)) 
+resourceForest0 path = do
+    (_, dirs) <- filesAndDirs path
+    traverse resourceTree dirs
+
+resourceTree :: FilePath -> IO (Tree (FilePath,Catalog)) 
+resourceTree path = do
+    (files, dirs) <- filesAndDirs path
+    let catalog = foldMap parseCatalog files
+    levelBelow <- traverse resourceTree dirs 
+    pure $ Node (takeFileName path,catalog) levelBelow
+
+filesAndDirs :: FilePath -> IO ([FilePath],[FilePath])
+filesAndDirs base = do
+    childPaths <- do
+        entries <- listDirectory base
+        pure $ do entry <- entries
+                  pure $ base </> entry
+    files <- filterM doesFileExist childPaths
+    dirs <- filterM doesDirectoryExist childPaths
+    pure (files, dirs)
 
