@@ -83,6 +83,7 @@ parseCatalog fullPath =
         ".txt" -> mempty {txt = r} 
         ".sql" -> mempty {sql = r}
         ".json" -> mempty {json = r}
+        "" -> mempty
 
 resourceForest :: FilePath -> IO (Forest FilePath) 
 resourceForest path = do
