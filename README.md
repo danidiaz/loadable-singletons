@@ -53,6 +53,8 @@ Example `Main.hs`:
 
 ## Alternatives
 
+- First of all, the built-in [`Paths_pkgname` mechanism for accessing data files from package code](https://cabal.readthedocs.io/en/3.4/cabal-package.html?highlight=getDataFileName%20#accessing-data-files-from-package-code). See also [this issue](https://github.com/haskell/cabal/issues/6096) in the Cabal repository.
+
 - [file-embed: Use Template Haskell to embed file contents directly.](https://hackage.haskell.org/package/file-embed)
 
 - [data-embed: Embed files and other binary blobs inside executables without Template Haskell.](https://hackage.haskell.org/package/data-embed)
